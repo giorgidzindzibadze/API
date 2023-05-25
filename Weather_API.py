@@ -10,9 +10,8 @@ lon = 44.8271
 cnt=6
 url = f'https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={key}'
 response = requests.get(url)
-x=response.text
-gio=json.loads(x)
-tojson=json.dumps(gio,indent=4)
+resp_data = response.text
+jsondata = response.json()
 
 # N1
 print(response.status_code)
@@ -21,19 +20,13 @@ print(response.headers['Content-Type'])
 print(response.text)
 
 
-# N2 ორგვარად გავაკეთე
+# N2
 
-file=open('json.json','w')
-file.write(x)
-file.close()
-
-
-file=open('json_dump.json','w')
-file.write(tojson)
-file.close()
+with open('weather.json', 'w+') as file:
+    json.dump(jsondata, file, indent=4 )
 
 # N3
-m = gio['list']
+m = jsondata['list']
 number =m[0]
 main=number['main']
 temp=main['temp']
@@ -51,7 +44,7 @@ conn = sqlite3.connect("weather_API.sqlite")
 cursor = conn.cursor()
 
 
-cursor.execute('''CREATE TABLE weather_API
+cursor.execute('''CREATE TABLE if not exists weather_API
 
 (id INTEGER PRIMARY KEY AUTOINCREMENT,
 ქალაქი VARCHAR(50),
@@ -61,8 +54,8 @@ cursor.execute('''CREATE TABLE weather_API
 მაქსიმალური_ტემპერატურა FLOAT);''')
 
 y='თბილისი'
-
-cursor.execute('INSERT INTO weather_API (ქალაქი, ტემპერატურა, ტენიანობა,წნევა,მაქსიმალური_ტემპერატურა) VALUES (?,?,?,?,?)',(y,temp,humidity,pressure,max_temp))
+a=(y,temp,humidity,pressure,max_temp)
+cursor.executemany('INSERT INTO weather_API (ქალაქი, ტემპერატურა, ტენიანობა,წნევა,მაქსიმალური_ტემპერატურა) VALUES (?,?,?,?,?)',(a, ) )
 conn.commit()
 conn.close()
 
